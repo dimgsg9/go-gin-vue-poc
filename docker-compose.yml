@@ -1,0 +1,76 @@
+version: "3.8"
+services:
+  reverse-proxy:
+    # The official v2 Traefik docker image
+    image: traefik:v2.4
+    # Enables the web UI and tells Traefik to listen to docker
+    command:
+      - "--api.insecure=true"
+      - "--providers.docker"
+      - "--providers.docker.exposedByDefault=false"
+    ports:
+      # The HTTP port
+      - "80:80"
+      # The Web UI (enabled by --api.insecure=true)
+      - "8080:8080"
+    volumes:
+      # So that Traefik can listen to the Docker events
+      - /var/run/docker.sock:/var/run/docker.sock
+  backend:
+    build:
+      context: ./backend
+      target: builder
+    image: backend
+    env_file: ./backend/.env.dev
+    expose:
+      - "8080"
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.backend.rule=Host(`booker.test`) && PathPrefix(`/api/account`)"
+    environment:
+      - ENV=dev
+    volumes:
+      - ./backend:/go/src/app
+    # have to use $$ (double-dollar) so docker doesn't try to substitute a variable
+    depends_on:
+      - postgres-backend
+      - redis-backend
+      - reverse-proxy
+    command: reflex -r "\.go$$" -s -- sh -c "go run ./"
+  postgres-backend:
+    image: "postgres:alpine"
+    environment:
+      - POSTGRES_PASSWORD=p@ssw0rd
+    ports:
+      - "5432:5432"
+    #   Set a volume for data and initial sql script
+    #   May configure initial db for future demo
+    volumes:
+      - "pgdata_backend:/var/lib/postgresql/data"
+      # - ./init:/docker-entrypoint-initdb.d/
+    command: ["postgres", "-c", "log_statement=all"]
+  redis-backend:
+    image: "redis:alpine"
+    ports:
+      - "6379:6379"
+    volumes:
+      - "redisdata:/data"
+  client-account:
+    build:
+      context: ./client-account
+    image: client-account
+    expose:
+      - "3000"
+    ports:
+      - "3000:3000"
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.client-account.rule=Host(`booker.test`) && PathPrefix(`/account`)"
+    volumes:
+      - ./client-account:/app
+      #- /app/node_modules
+    depends_on:
+      - reverse-proxy
+volumes:
+  pgdata_backend:
+  redisdata:

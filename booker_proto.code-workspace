@@ -1,0 +1,16 @@
+{
+    "folders": [
+        {
+	    "name": "client-account",
+            "path": "client-account"
+        },
+        {
+	    "name": "backend",
+            "path": "backend"
+        },
+        {
+	    "name": "booker_proto",
+            "path": "."
+        }
+    ]
+}
