@@ -4,28 +4,27 @@ import Home from './views/Home.vue'
 import Login from './views/Login.vue'
 import Register from './views/Register.vue'
 import NotFound from './views/NotFound.vue'
-import { createApp } from 'vue';
 
 const routes = [
     {
         path: '/login',
-        name: 'Login',
+        name: 'login',
         component: Login,
     },
     {
         path: '/register',
-        name: 'Register',
+        name: 'register',
         component: Register,
         // beforeEnter: requireAuth,
     },
     {
         path: '/',
-        name: 'Home',
+        name: 'home',
         component: Home
     },
     {
         path: '/:catchAll(.*)*',
-        name: 'NotFound',
+        name: 'notFound',
         component: NotFound,
     },
 ];
