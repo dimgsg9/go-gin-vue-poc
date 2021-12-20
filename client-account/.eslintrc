@@ -11,5 +11,8 @@
                 "argsIgnorePattern": "^_"
             }
         ]
+    },
+    "globals": {
+        "defineProps": "readonly"
     }
 }
