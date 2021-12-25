@@ -3,21 +3,41 @@ package handler
 import (
 	"fmt"
 	"log"
+	"reflect"
+	"strings"
 
 	"github.com/dimgsg9/booker_proto/backend/model/apperrors"
 	"github.com/gin-gonic/gin"
+	"github.com/gin-gonic/gin/binding"
+	"github.com/go-playground/locales/en"
 	"github.com/go-playground/validator/v10"
-)
 
-type invalidArgument struct {
-	Field string `json:"field"`
-	Value string `json:"value"`
-	Tag   string `json:"tag"`
-	Param string `json:"param"`
-}
+	ut "github.com/go-playground/universal-translator"
+
+	enTranslations "github.com/go-playground/validator/v10/translations/en"
+)
 
 // bindData is helper function, returns false if data is not bound
 func bindData(c *gin.Context, req interface{}) bool {
+
+	var trans ut.Translator
+
+	if v, ok := binding.Validator.Engine().(*validator.Validate); ok {
+		v.RegisterTagNameFunc(func(fld reflect.StructField) string {
+			name := strings.SplitN(fld.Tag.Get("json"), ",", 2)[0]
+			if name == "-" {
+				return ""
+			}
+			return name
+		})
+
+		en := en.New()
+		uni := ut.New(en, en)
+		trans, _ = uni.GetTranslator("en")
+		enTranslations.RegisterDefaultTranslations(v, trans)
+
+	}
+
 	if c.ContentType() != "application/json" {
 		msg := fmt.Sprintf("%s only accepts Content-Type application/json", c.FullPath())
 
@@ -33,17 +53,14 @@ func bindData(c *gin.Context, req interface{}) bool {
 	if err := c.ShouldBind(req); err != nil {
 		log.Printf("Error binding data: %+v\n", err)
 
-		if errs, ok := err.(validator.ValidationErrors); ok {
-			// could probably extract this, it is also in middleware_auth_user
-			var invalidArgs []invalidArgument
+		if verrs, ok := err.(validator.ValidationErrors); ok {
+			invalidArgs := make(map[string]string)
 
-			for _, err := range errs {
-				invalidArgs = append(invalidArgs, invalidArgument{
-					err.Field(),
-					err.Value().(string),
-					err.Tag(),
-					err.Param(),
-				})
+			for _, verr := range verrs {
+				// if verr.Param() != "" {
+				// 	invalidArgs[verr.Field()] = verr.Translate(trans)
+				// }
+				invalidArgs[verr.Field()] = verr.Translate(trans)
 			}
 
 			err := apperrors.NewBadRequest("Invalid request parameters. See invalidArgs")
