@@ -1,32 +1,70 @@
 <script setup>
+import { nextTick } from 'vue'
+import { Form, Field, ErrorMessage } from 'vee-validate'
 
-import { onMounted, reactive } from 'vue'
-import InputGeneric from './InputGeneric.vue'
+const emits = defineEmits(['submit'])
 
-const props = defineProps({
-    inputs: {
-        type: Array,
+defineProps({
+    schema: {
+        type: Object,
         required: true,
     }
 })
 
-const state = reactive({
-    fields: props.inputs
-})
+/**
+ * Handle submission of vee. Form
+ * @param {Object} values Form values
+ * @param {Object} actions Form actions
+ */
+function submitForm(values, actions) {
+    const args = {
+        value: values,
+        actions: actions,
+    }
+    emits('submit', args)         
+}
 
-onMounted(() => {
-    //
-})
+/**
+ * Handle failed validation of vee. Form
+ * @param {Object} errors Form validation errors
+ */
+function onInvalidSubmit({ errors }) {
+    const fieldName = Object.keys(errors)[0]
+    const el = document.querySelector(`input[name="${fieldName}"]`)
+    nextTick(() => {
+        el?.scrollIntoView()
+        el?.focus()
+    })
+}
 
-// v-model="state.username"
- 
 </script>
-
 
 <template>
     <div class="text-xl font-bold text-center my-12">Form</div>
-    <form action="">
-        <InputGeneric v-for="(item, index) in inputs" :key="item.id" :name="item.name" :type="item.type" :label="item.label" :placeholder="item.placeholder" v-model="state.fields[index].value"></InputGeneric>
-        <button type="button">submit</button>
-    </form>
+    <Form @submit="submitForm" @invalid-submit="onInvalidSubmit" ref="FormRef" v-slot="{ isSubmitting, errors, meta }">
+        <div class="form-control" v-for="field in schema.fields" :key="field.name">
+            <label :for="field.name" class="label">
+                 <span class="label-text">{{ field.label }}</span>
+            </label>
+            <Field v-bind="field" :id="field.name" :name="field.name" :type="field.type" class="input input-bordered" :class="{ 'input-error': errors[field.name] }"/>
+            <label class="label">
+                <ErrorMessage :name="field.name" class="label-text-alt" />
+            </label>
+        </div>
+
+        <div class="form-control pt-5">
+            <button class="btn btn-primary" :class="{'loading': isSubmitting}" :disabled="!meta.dirty">{{ schema.submitLabel }}</button>
+        </div>
+    </Form>
 </template>
+
+/* TODO:
+
+[done] Validation styles
+Server non validation errors
+Select
+Checkbox
+[done] Scroll to the input with error
+[almost] disabled button and load spinner
+
+*/

@@ -32,5 +32,7 @@ onMounted(() => {
         <router-link to="/">Home</router-link>
         <router-link :to="{ name: 'register' }">Register</router-link>
     </div>
-    <router-view></router-view>
+    <div class="container mx-auto px-4">
+        <router-view></router-view>
+    </div>
 </template>
