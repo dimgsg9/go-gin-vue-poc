@@ -25,7 +25,8 @@ const state = reactive({
             rules: string().min(6).required(),
         }
         ],
-        submitLabel: 'Login'
+        submitLabel: 'Login',
+        loading: false
     },
     validationErrors: 
     {
@@ -44,13 +45,20 @@ onMounted(() => {
  */
 function signin(form) {
     console.log('calling signin() method with values:\n' + JSON.stringify(form.value, null, 2))
-    // axios.post('/api/account/signin', form.value)
-    //     .then()
-    //     .catch()
-    // await sleep(2000);
-    sleep(2000).then(() => {
-        form.actions.setErrors(state.validationErrors)
-    });   
+    state.loginFormSchema.loading = true
+    axios.post('/api/account/signin', form.value)
+        .then(response => {
+            console.log(response)
+        })
+        .catch(error => {
+            // check for 4xx
+            // check for 5xx or anything else - throw modal
+            console.log(error.response.status)
+            sleep(2000).then(() => {
+                form.actions.setErrors(state.validationErrors)
+                state.loginFormSchema.loading = false
+            })
+        })
 }
 
 function sleep(ms) {

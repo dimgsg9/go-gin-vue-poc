@@ -8,6 +8,13 @@ defineProps({
     schema: {
         type: Object,
         required: true,
+        default() {
+            return {
+                fields: [],
+                submitLabel: 'submit',
+                loading: false,
+            }
+      }
     }
 })
 
@@ -21,7 +28,7 @@ function submitForm(values, actions) {
         value: values,
         actions: actions,
     }
-    emits('submit', args)         
+    emits('submit', args)
 }
 
 /**
@@ -53,7 +60,7 @@ function onInvalidSubmit({ errors }) {
         </div>
 
         <div class="form-control pt-5">
-            <button class="btn btn-primary" :class="{'loading': isSubmitting}" :disabled="!meta.dirty">{{ schema.submitLabel }}</button>
+            <button class="btn btn-primary" :class="{'loading': isSubmitting || schema.loading}" :disabled="!meta.dirty">{{ schema.loading ? 'loading' : schema.submitLabel }}</button>
         </div>
     </Form>
 </template>
@@ -65,6 +72,6 @@ Server non validation errors
 Select
 Checkbox
 [done] Scroll to the input with error
-[almost] disabled button and load spinner
+[done] disabled button and load spinner
 
 */
