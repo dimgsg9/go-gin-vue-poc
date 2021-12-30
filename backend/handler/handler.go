@@ -14,6 +14,7 @@ import (
 type Handler struct {
 	UserService  model.UserService
 	TokenService model.TokenService
+	OAuthService model.OAuthService
 }
 
 // Config will hold services that will eventually be injected into this
@@ -22,6 +23,7 @@ type Config struct {
 	R               *gin.Engine
 	UserService     model.UserService
 	TokenService    model.TokenService
+	OAuthService    model.OAuthService
 	BaseURL         string
 	TimeoutDuration time.Duration
 }
@@ -33,6 +35,7 @@ func NewHandler(c *Config) {
 	h := &Handler{
 		UserService:  c.UserService,
 		TokenService: c.TokenService,
+		OAuthService: c.OAuthService,
 	}
 
 	g := c.R.Group(c.BaseURL)
@@ -52,6 +55,8 @@ func NewHandler(c *Config) {
 	g.POST("/image", h.Image)
 	g.DELETE("/image", h.DeleteImage)
 	g.PUT("/details", h.Details)
+
+	g.GET("/oauth", h.GetLoginURL)
 }
 
 // Image handler

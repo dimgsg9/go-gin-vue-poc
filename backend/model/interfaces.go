@@ -31,3 +31,7 @@ type TokenRepository interface {
 	DeleteRefreshToken(ctx context.Context, userID string, prevTokenID string) error
 	DeleteUserRefreshTokens(ctx context.Context, userID string) error
 }
+
+type OAuthService interface {
+	GetLoginURL(ctx context.Context, provider string, state string) (string, error)
+}

@@ -82,6 +82,15 @@ func inject(d *dataSources) (*gin.Engine, error) {
 		RefreshExpirationSecs: refreshExp,
 	})
 
+	oauth2Creds := service.OAuthCreds{
+		Cid:     os.Getenv("GOOGLE_OAUTH2_CLIENT_ID"),
+		Csecret: os.Getenv("GOOGLE_OAUTH2_CLIEN_SECRET"),
+	}
+
+	oauthService := service.NewOAuthService(&service.OSConfig{
+		Creds: oauth2Creds,
+	})
+
 	// initialize gin.Engine
 	router := gin.Default()
 
@@ -98,6 +107,7 @@ func inject(d *dataSources) (*gin.Engine, error) {
 		R:               router,
 		UserService:     userService,
 		TokenService:    tokenService,
+		OAuthService:    oauthService,
 		BaseURL:         baseURL,
 		TimeoutDuration: time.Duration(time.Duration(ht) * time.Second),
 	})
