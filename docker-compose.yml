@@ -26,7 +26,7 @@ services:
       - "8080"
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.backend.rule=Host(`booker.test`) && PathPrefix(`/api/account`)"
+      - "traefik.http.routers.backend.rule=Host(`booker.app`) && PathPrefix(`/api/account`)"
     environment:
       - ENV=dev
     volumes:
@@ -65,7 +65,7 @@ services:
       - "3000:3000"
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.client-account.rule=Host(`booker.test`) && PathPrefix(`/account`)"
+      - "traefik.http.routers.client-account.rule=Host(`booker.app`) && PathPrefix(`/account`)"
     volumes:
       - ./client-account:/app
       #- /app/node_modules
