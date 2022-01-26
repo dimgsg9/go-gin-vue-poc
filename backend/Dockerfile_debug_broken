@@ -1,0 +1,32 @@
+FROM golang:alpine as builder
+
+# Deps required to build Delve
+RUN apk --no-cache add build-base
+
+WORKDIR /go/src/app
+
+ENV GO111MODULE=on
+
+# For hot reload via reflex
+RUN go get github.com/cespare/reflex
+# For debugging via delve
+RUN go get github.com/go-delve/delve/cmd/dlv
+
+COPY go.mod .
+COPY go.sum .
+
+RUN go mod download
+
+COPY . .
+
+RUN CGO_ENABLED=0 -gcflags="all=-N -l" go build -o run .
+
+FROM alpine:latest
+RUN apk --no-cache add ca-certificates
+WORKDIR /root/
+
+#Copy executable from builder
+COPY --from=builder /go/src/app/run .
+
+EXPOSE 8080
+CMD ["./run"]
