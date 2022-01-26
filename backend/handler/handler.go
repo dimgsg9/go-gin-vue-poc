@@ -7,6 +7,7 @@ import (
 	"github.com/dimgsg9/booker_proto/backend/handler/middleware"
 	"github.com/dimgsg9/booker_proto/backend/model"
 	"github.com/dimgsg9/booker_proto/backend/model/apperrors"
+	"github.com/gin-contrib/sessions"
 	"github.com/gin-gonic/gin"
 )
 
@@ -38,6 +39,8 @@ func NewHandler(c *Config) {
 		OAuthService: c.OAuthService,
 	}
 
+	sstore, _ := h.OAuthService.GetSessionStore() //TODO: proper error return
+
 	g := c.R.Group(c.BaseURL)
 
 	if gin.Mode() != gin.TestMode {
@@ -56,7 +59,8 @@ func NewHandler(c *Config) {
 	g.DELETE("/image", h.DeleteImage)
 	g.PUT("/details", h.Details)
 
-	g.GET("/oauth", h.GetLoginURL)
+	g.GET("/oauth", sessions.Sessions("SID", sstore), h.GetLoginURL)
+	g.GET("/oauth/callback", sessions.Sessions("SID", sstore), h.AuthCallback)
 }
 
 // Image handler

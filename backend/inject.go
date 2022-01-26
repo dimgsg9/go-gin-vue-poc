@@ -84,11 +84,12 @@ func inject(d *dataSources) (*gin.Engine, error) {
 
 	oauth2Creds := service.OAuthCreds{
 		Cid:     os.Getenv("GOOGLE_OAUTH2_CLIENT_ID"),
-		Csecret: os.Getenv("GOOGLE_OAUTH2_CLIEN_SECRET"),
+		Csecret: os.Getenv("GOOGLE_OAUTH2_CLIENT_SECRET"),
 	}
 
 	oauthService := service.NewOAuthService(&service.OSConfig{
 		Creds: oauth2Creds,
+		Store: *d.SessionStore,
 	})
 
 	// initialize gin.Engine

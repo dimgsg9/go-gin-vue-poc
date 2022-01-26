@@ -78,3 +78,20 @@ func (s *userService) Signin(ctx context.Context, u *model.User) error {
 
 	return nil
 }
+
+func (s *userService) OauthLogin(ctx context.Context, u *model.User) error {
+	uFetched, _ := s.UserRepository.FindByEmail(ctx, u.Email) //TODO: refactor into FindOrCreate()
+
+	// uFetched is never nil, thus checking Email attribute
+	if uFetched.Email == "" {
+		u.UID = uuid.New()
+		// create a user on the fly
+		if err := s.UserRepository.PwdlessCreate(ctx, u); err != nil {
+			return err
+		}
+	}
+
+	u.UID = uFetched.UID
+
+	return nil
+}

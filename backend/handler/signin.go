@@ -39,7 +39,6 @@ func (h *Handler) Signin(c *gin.Context) {
 	}
 
 	tokens, err := h.TokenService.NewPairFromUser(ctx, u, "")
-
 	if err != nil {
 		log.Printf("Failed to create tokens for user: %v\n", err.Error())
 

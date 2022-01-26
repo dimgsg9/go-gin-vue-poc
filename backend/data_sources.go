@@ -6,14 +6,16 @@ import (
 	"log"
 	"os"
 
+	sredis "github.com/gin-contrib/sessions/redis"
 	"github.com/go-redis/redis/v8"
 	"github.com/jmoiron/sqlx"
 	_ "github.com/lib/pq"
 )
 
 type dataSources struct {
-	DB          *sqlx.DB
-	RedisClient *redis.Client
+	DB           *sqlx.DB
+	RedisClient  *redis.Client
+	SessionStore *sredis.Store
 }
 
 // InitDS establishes connections to fields in dataSources
@@ -59,9 +61,12 @@ func initDS() (*dataSources, error) {
 		return nil, fmt.Errorf("error connecting to redis: %w", err)
 	}
 
+	ss, _ := sredis.NewStore(10, "tcp", fmt.Sprintf("%s:%s", redisHost, redisPort), "", []byte("secret")) //TODO: separate into own redis instance, check for errors, use 32 bytes secret
+
 	return &dataSources{
-		DB:          db,
-		RedisClient: rdb,
+		DB:           db,
+		RedisClient:  rdb,
+		SessionStore: &ss,
 	}, nil
 }
 

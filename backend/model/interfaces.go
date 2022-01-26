@@ -4,6 +4,7 @@ import (
 	"context"
 	"time"
 
+	"github.com/gin-contrib/sessions/redis"
 	"github.com/google/uuid"
 )
 
@@ -11,6 +12,7 @@ type UserService interface {
 	Get(ctx context.Context, uid uuid.UUID) (*User, error)
 	Signup(ctx context.Context, u *User) error
 	Signin(ctx context.Context, u *User) error
+	OauthLogin(ctx context.Context, u *User) error
 }
 
 type TokenService interface {
@@ -22,6 +24,7 @@ type TokenService interface {
 
 type UserRepository interface {
 	Create(ctx context.Context, u *User) error
+	PwdlessCreate(ctx context.Context, u *User) error
 	FindByID(ctx context.Context, uid uuid.UUID) (*User, error)
 	FindByEmail(ctx context.Context, email string) (*User, error)
 }
@@ -34,4 +37,6 @@ type TokenRepository interface {
 
 type OAuthService interface {
 	GetLoginURL(ctx context.Context, provider string, state string) (string, error)
+	AuthCallback(ctx context.Context, provider string, code string) (*User, error)
+	GetSessionStore() (redis.Store, error)
 }
