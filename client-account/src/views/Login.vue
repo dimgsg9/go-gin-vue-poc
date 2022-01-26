@@ -48,19 +48,27 @@ function signin(form) {
     state.loginFormSchema.loading = true
     axios.post('/api/account/signin', form.value)
         .then(response => {
-            console.log(response)
+            console.log('inside .then()\n' + response)
         })
         .catch(error => {
-            // check for 4xx
-            // check for 5xx or anything else - throw modal
-            console.log(error.response.status)
+            // check for failed server side field validation
+            if (error.response.status == 400) {
+                state.validationErrors.username = error.response.data.invalidArgs.email
+            } else {
+                //state.loginFormSchema.loading = false
+                // show modal?
+            }        
             sleep(2000).then(() => {
                 form.actions.setErrors(state.validationErrors)
-                state.loginFormSchema.loading = false
+                // state.loginFormSchema.loading = false
             })
+        })
+        .finally(() => {
+            // state.loginFormSchema.loading = false
         })
 }
 
+// TODO: remove temporary function sleep()
 function sleep(ms) {
   return new Promise(resolve => setTimeout(resolve, ms));
 }
